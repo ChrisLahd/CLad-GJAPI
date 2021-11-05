@@ -146,7 +146,7 @@ class GameJoltAPI // Connects to tentools.api.FlxGameJolt
         FlxG.save.data.gjUser = "";
         FlxG.save.data.gjToken = "";
         FlxG.save.flush();
-        trace(FlxG.save.data.gjUser + FlxG.save.data.gjToken);
+        trace(FlxG.save.data.gjUser + " " + FlxG.save.data.gjToken);
         trace("Logged out!");
         GameJoltLogin.restart();
     }
@@ -321,12 +321,16 @@ class GameJoltLogin extends MusicBeatSubstate
             trace(tokenBox.text);
             GameJoltAPI.authDaUser(usernameBox.text,tokenBox.text,true);
         });
+        signInBox.y -= 50;
+        signInBox.text.size = signInBox.text.size * 1.5;
 
         helpBox = new FlxButton(0, 550, "GameJolt Token", function()
         {
             openLink('https://www.youtube.com/watch?v=T5-x7kAGGnE'); // revert this to othern thing
         });
+        helpBox.text.size = helpBox.text.size * 1.5;
         helpBox.color = FlxColor.fromRGB(84,155,149);
+        helpBox.y -= 50;
 
         logOutBox = new FlxButton(0, 650, "Log Out & Restart", function()
         {
@@ -337,13 +341,14 @@ class GameJoltLogin extends MusicBeatSubstate
         logOutBox.text = "Log Out & Close";
         #end
         logOutBox.color = FlxColor.RED /*FlxColor.fromRGB(255,134,61)*/ ;
-
+        logOutBox.y -= 50;
         cancelBox = new FlxButton(0,650, "Not Right Now", function()
         {
             FlxG.sound.play(Paths.sound('confirmMenu'), 0.7, false, null, true, function(){
                 FlxG.switchState(new MainMenuState());
             });
         });
+        cancelBox.y -= 50;
 
         if(!GameJoltAPI.getStatus())
         {
@@ -362,6 +367,7 @@ class GameJoltLogin extends MusicBeatSubstate
             item.screenCenter(X);
             item.setGraphicSize(Std.int(item.width) * 3);
             item.x += baseX;
+            item.y -= 50;
         });
 
         if(GameJoltAPI.getStatus())
