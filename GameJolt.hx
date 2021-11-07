@@ -108,36 +108,41 @@ class GameJoltAPI // Connects to tentools.api.FlxGameJolt
 
     public static function authDaUser(in1, in2, ?loginArg:Bool = false) /* Logs the user in */
     {
-
-        if(userLogin == false)
+        
+        if (in1 == null)
         {
             FlxG.switchState(new GameJoltLogin());
-            
-            if (userLogin == true)
+
+            if (in1 != null)
             {
-                FlxG.switchState(new GameJoltLogin());
+                if (FlxG.save.data.dshow == false)
+                {
+                    FlxG.switchState(new GameJoltLogin());
+                }
             }
         }
-        
+
+        if (!userLogin || userLogin)
         {
             Api.authUser(in1, in2, function(v:Bool)
-            {
-                trace("user: "+(in1 == "" ? "n/a" : in1));
-                trace("token: "+in2);
-                if(v)
-                    {
-                        trace("User authenticated!");
-                        FlxG.save.data.gjUser = in1;
-                        FlxG.save.data.gjToken = in2;
-                        FlxG.save.flush();
-                        userLogin = true;
-                        startSession();
-                        FlxG.sound.play(Paths.sound('confirmMenu'));
-                     }
-            }
-        });
+                {
+                    FlxG.switchState(new GameJoltLogin());
+                    trace("user: "+(in1 == "" ? "n/a" : in1));
+                    trace("token:"+in2);
+                    if(v)
+                        {
+                            trace("User authenticated!");
+                            FlxG.save.data.gjUser = in1;
+                            FlxG.save.data.gjToken = in2;
+                            FlxG.save.flush();
+                            userLogin = true;
+                            startSession();
+                            FlxG.sound.play(Paths.sound('confirmMenu'));
+                        }
+                });
         }
     }
+    
     public static function deAuthDaUser() /* Logs the user out and closes the game */
     {
         closeSession();
@@ -146,7 +151,7 @@ class GameJoltAPI // Connects to tentools.api.FlxGameJolt
         FlxG.save.data.gjUser = "";
         FlxG.save.data.gjToken = "";
         FlxG.save.flush();
-        trace(FlxG.save.data.gjUser + " " + FlxG.save.data.gjToken);
+        trace(FlxG.save.data.gjUser + FlxG.save.data.gjToken);
         trace("Logged out!");
         GameJoltLogin.restart();
     }
@@ -220,7 +225,7 @@ class GameJoltAPI // Connects to tentools.api.FlxGameJolt
 
 class GameJoltInfo extends FlxSubState
 {
-    public static var version:String = "1.0.2 Public Beta";
+    public static var version:String = "1.0.0 Public Beta";
 }
 
 class GameJoltLogin extends MusicBeatSubstate
@@ -250,13 +255,9 @@ class GameJoltLogin extends MusicBeatSubstate
     static var trophyCheck:Bool = false;
     override function create()
     {
-//         if(!login)
-//             {
-//                 FlxG.sound.playMusic(Paths.music('freakyMenu'),0);
-//                 FlxG.sound.music.fadeIn(2, 0, 0.85);
-// 		Conductor.changeBPM(102);
-//             }
 
+
+        
         trace("init? " + Api.initialized);
         FlxG.mouse.visible = true;
 
@@ -270,7 +271,7 @@ class GameJoltLogin extends MusicBeatSubstate
 		add(bg);
 
 
-        gamejoltText = new FlxText(0, 25, 0, "GameJoltAPI Integration", 16);
+        gamejoltText = new FlxText(0, 25, 0, "GameJolt Integration", 16);
         gamejoltText.screenCenter(X);
         gamejoltText.x += baseX;
         gamejoltText.color = FlxColor.fromRGB(84,155,149);
@@ -321,34 +322,40 @@ class GameJoltLogin extends MusicBeatSubstate
             trace(tokenBox.text);
             GameJoltAPI.authDaUser(usernameBox.text,tokenBox.text,true);
         });
-        signInBox.y -= 50;
-        signInBox.text.size = signInBox.text.size * 1.5;
 
-        helpBox = new FlxButton(0, 550, "GameJolt Token", function()
+        helpBox = new FlxButton(0, 550, "Token", function()
         {
-            openLink('https://www.youtube.com/watch?v=T5-x7kAGGnE'); // revert this to othern thing
+            var token:FlxSprite = new FlxSprite().loadGraphic(Paths.image('helppp', 'preload'));
+            token.x += 80;
+            token.y += 150;
+            add(token);
+
+            new FlxTimer().start(3, function(tmr:FlxTimer)
+                {
+                    remove(token);
+                });
         });
-        helpBox.text.size = helpBox.text.size * 1.5;
         helpBox.color = FlxColor.fromRGB(84,155,149);
-        helpBox.y -= 50;
 
         logOutBox = new FlxButton(0, 650, "Log Out & Restart", function()
         {
             // GameJoltAPI.fetchAllTrophies();
-            // GameJoltAPI.deAuthDaUser();
+            GameJoltAPI.deAuthDaUser();
+            restart();
         });
         #if !windows
         logOutBox.text = "Log Out & Close";
         #end
         logOutBox.color = FlxColor.RED /*FlxColor.fromRGB(255,134,61)*/ ;
-        logOutBox.y -= 50;
+
         cancelBox = new FlxButton(0,650, "Not Right Now", function()
         {
             FlxG.sound.play(Paths.sound('confirmMenu'), 0.7, false, null, true, function(){
                 FlxG.switchState(new MainMenuState());
             });
         });
-        cancelBox.y -= 50;
+
+
 
         if(!GameJoltAPI.getStatus())
         {
@@ -365,9 +372,11 @@ class GameJoltLogin extends MusicBeatSubstate
 
         loginButtons.forEach(function(item:FlxButton){
             item.screenCenter(X);
-            item.setGraphicSize(Std.int(item.width) * 3);
+            item.setGraphicSize(Std.int(item.width) * 2);
             item.x += baseX;
             item.y -= 50;
+            
+
         });
 
         if(GameJoltAPI.getStatus())
